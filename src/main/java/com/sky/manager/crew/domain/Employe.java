@@ -24,4 +24,8 @@ public class Employe extends Personne {
   public Date getDateEmbauche() {
     return dateEmbauche;
   }
+
+  public String obtenirRole() {
+    return "Employe";
+  }
 }

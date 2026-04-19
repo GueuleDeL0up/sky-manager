@@ -44,4 +44,8 @@ public class Personne {
   public void setContact(String contact) {
     this.contact = contact;
   }
+
+  public void obtenirInfos() {
+    System.out.println("Identifiant: " + identifiant + " Nom: " + nom + " Adresse: " + adresse + " Contact: " + contact);
+  }
 }

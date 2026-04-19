@@ -18,5 +18,10 @@ public class PersonnelCabine extends Employe {
     this.qualification = qualification;
   }
 
+  @Override
+  public String obtenirRole() {
+    return "Personnel cabine";
+  }
+
 }
 

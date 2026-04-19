@@ -27,4 +27,9 @@ public class Pilote extends Employe{
   public void setHeureDeVol(String heureDeVol) {
     this.heureDeVol = heureDeVol;
   }
+
+  @Override
+  public String obtenirRole() {
+    return "Pilote";
+  }
 }
