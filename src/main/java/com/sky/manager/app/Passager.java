@@ -7,4 +7,11 @@ public class Passager extends Personne{
     super(identifiant, nom, adresse, contact);
     this.passport = passport;
   }
+
+  public int getPassport() {
+    return passport;
+  }
+  public void setPassport(int passport) {
+    this.passport = passport;
+  }
 }

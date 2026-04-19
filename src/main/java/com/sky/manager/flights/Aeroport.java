@@ -10,4 +10,27 @@ public class Aeroport {
     this.ville = ville;
     this.description = description;
   }
+
+  public String getNom() {
+    return nom;
+  }
+  public void setNom(String nom) {
+    this.nom = nom;
+  }
+
+  public String getVille() {
+    return ville;
+  }
+
+  public void setVille(String ville) {
+    this.ville = ville;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
 }
