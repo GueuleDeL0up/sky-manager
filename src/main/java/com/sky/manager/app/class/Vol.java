@@ -8,7 +8,8 @@ public class Vol {
   private String dateHeureArrive;
   private String etat;
 
-  public Vol(int numeroVol, String origine, String destination, String dateHeureDepart, String dateHeureArrive, String etat) {
+  public Vol(int numeroVol, String origine, String destination, String dateHeureDepart, String dateHeureArrive,
+      String etat) {
     this.numeroVol = numeroVol;
     this.origine = origine;
     this.destination = destination;

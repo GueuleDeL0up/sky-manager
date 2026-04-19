@@ -46,6 +46,7 @@ public abstract class Personne {
   }
 
   public void obtenirInfos() {
-    System.out.println("Identifiant: " + identifiant + " Nom: " + nom + " Adresse: " + adresse + " Contact: " + contact);
+    System.out
+        .println("Identifiant: " + identifiant + " Nom: " + nom + " Adresse: " + adresse + " Contact: " + contact);
   }
 }

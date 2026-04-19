@@ -5,7 +5,7 @@ import com.sky.manager.planning.domain.Reservation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Passager extends Personne{
+public class Passager extends Personne {
   private int passport;
   private List<Reservation> reservations = new ArrayList<>();
 
@@ -18,6 +18,7 @@ public class Passager extends Personne{
   public int getPassport() {
     return passport;
   }
+
   public void setPassport(int passport) {
     this.passport = passport;
   }
