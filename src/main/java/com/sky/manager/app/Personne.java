@@ -1,6 +1,6 @@
 package com.sky.manager.app;
 
-public class Personne {
+public abstract class Personne {
   private int identifiant;
   private String nom;
   private String adresse;
