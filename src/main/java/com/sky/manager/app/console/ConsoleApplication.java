@@ -2,30 +2,34 @@ package com.sky.manager.app.console;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
-import com.sky.manager2.shared.domain.Aircraft;
-import com.sky.manager2.shared.domain.CrewMember;
-import com.sky.manager2.shared.domain.Flight;
-import com.sky.manager2.shared.service.AircraftService;
-import com.sky.manager2.shared.service.CrewService;
-import com.sky.manager2.shared.service.FlightService;
-import com.sky.manager2.shared.service.PlanningService;
+import com.sky.manager.app.classes.Aeroport;
+import com.sky.manager.app.classes.Avion;
+import com.sky.manager.app.classes.Employe;
+import com.sky.manager.app.classes.PersonnelCabine;
+import com.sky.manager.app.classes.Pilote;
+import com.sky.manager.app.classes.Vol;
 
 public final class ConsoleApplication {
 
-  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+  private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm";
+  private static final String DATE_PATTERN = "yyyy-MM-dd";
 
   private final ConsoleInput input;
   private final ConsoleOutput output;
-  private final AircraftService aircraftService;
-  private final CrewService crewService;
-  private final FlightService flightService;
-  private final PlanningService planningService;
+  private final List<Vol> vols;
+  private final List<Avion> avions;
+  private final List<Employe> equipages;
+  private final List<Aeroport> aeroports;
+  private int nextFlightNumber = 1;
 
   public ConsoleApplication() {
     this(System.in, System.out);
@@ -34,10 +38,10 @@ public final class ConsoleApplication {
   public ConsoleApplication(InputStream inputStream, PrintStream printStream) {
     this.input = new ConsoleInput(new Scanner(inputStream), printStream);
     this.output = new ConsoleOutput(printStream);
-    this.planningService = new PlanningService();
-    this.aircraftService = new AircraftService();
-    this.crewService = new CrewService();
-    this.flightService = new FlightService(planningService);
+    this.vols = new ArrayList<>();
+    this.avions = new ArrayList<>();
+    this.equipages = new ArrayList<>();
+    this.aeroports = new ArrayList<>();
     seedSampleData();
   }
 
@@ -111,114 +115,281 @@ public final class ConsoleApplication {
   }
 
   private void listFlights() {
-    List<Flight> flights = flightService.listFlights();
-    if (flights.isEmpty()) {
+    if (vols.isEmpty()) {
       output.println("Aucun vol enregistre.");
       return;
     }
 
-    flights.forEach(flight -> output.println(flight.toDisplayString()));
+    vols.forEach(vol -> output.println(formatFlight(vol)));
   }
 
   private void createFlight() {
-    String code = input.readNonBlank("Code vol: ");
-    String departureAirport = input.readNonBlank("Aeroport de depart: ");
-    String arrivalAirport = input.readNonBlank("Aeroport d'arrivee: ");
-    LocalDateTime departureTime = readDateTime("Date et heure de depart (yyyy-MM-dd HH:mm): ");
-    LocalDateTime arrivalTime = readDateTime("Date et heure d'arrivee (yyyy-MM-dd HH:mm): ");
-    Flight flight = flightService.createFlight(code, departureAirport, arrivalAirport, departureTime, arrivalTime);
-    output.println("Vol cree: " + flight.toDisplayString());
+    String origine = input.readNonBlank("Aeroport de depart: ");
+    String destination = input.readNonBlank("Aeroport d'arrivee: ");
+    String departureTime = readDateTime("Date et heure de depart (yyyy-MM-dd HH:mm): ");
+    String arrivalTime = readDateTime("Date et heure d'arrivee (yyyy-MM-dd HH:mm): ");
+
+    Vol vol = new Vol(nextFlightNumber++, origine, destination, departureTime, arrivalTime, "planifie");
+    vols.add(vol);
+    output.println("Vol cree: " + formatFlight(vol));
   }
 
   private void assignAircraftToFlight() {
-    String flightCode = input.readNonBlank("Code vol: ");
-    String registration = input.readNonBlank("Immatriculation avion: ");
-    Flight flight = flightService.findFlight(flightCode);
-    Aircraft aircraft = aircraftService.findAircraft(registration);
-    flightService.assignAircraft(flight, aircraft);
+    Vol vol = findFlight(input.readInt("Numero de vol: "));
+    if (vol == null) {
+      output.println("Vol introuvable.");
+      return;
+    }
+
+    Avion avion = findAircraft(input.readNonBlank("Immatriculation avion: "));
+    if (avion == null) {
+      output.println("Avion introuvable.");
+      return;
+    }
+
+    vol.setAvion(avion);
+    avion.ajouterVol(vol);
+    avion.setEtat("affecte");
     output.println("Avion affecte au vol.");
   }
 
   private void assignCrewToFlight() {
-    String flightCode = input.readNonBlank("Code vol: ");
-    String crewId = input.readNonBlank("Identifiant equipage: ");
-    Flight flight = flightService.findFlight(flightCode);
-    CrewMember crewMember = crewService.findCrewMember(crewId);
-    flightService.assignCrewMember(flight, crewMember);
-    output.println("Membre d'equipage affecte au vol.");
+    Vol vol = findFlight(input.readInt("Numero de vol: "));
+    if (vol == null) {
+      output.println("Vol introuvable.");
+      return;
+    }
+
+    Pilote pilote = findPilot(input.readInt("Numero employe du pilote: "));
+    if (pilote == null) {
+      output.println("Pilote introuvable.");
+      return;
+    }
+
+    String cabinIds = input.readNonBlank("Numeros employe du personnel cabine (separes par des virgules): ");
+    List<PersonnelCabine> personnelCabine = new ArrayList<>();
+    for (String token : cabinIds.split(",")) {
+      String trimmed = token.trim();
+      if (trimmed.isEmpty()) {
+        continue;
+      }
+
+      PersonnelCabine member = findCabinCrew(parseIntOrFail(trimmed, "Numero employe invalide: " + trimmed));
+      if (member == null) {
+        output.println("Personnel cabine introuvable: " + trimmed);
+        return;
+      }
+      personnelCabine.add(member);
+    }
+
+    if (personnelCabine.isEmpty()) {
+      output.println("Au moins un membre du personnel cabine est requis.");
+      return;
+    }
+
+    vol.setPilote(pilote);
+    vol.getPersonnelCabine().clear();
+    vol.getPersonnelCabine().addAll(personnelCabine);
+    output.println("Equipage affecte au vol.");
   }
 
   private void listAircraft() {
-    List<Aircraft> aircraft = aircraftService.listAircraft();
-    if (aircraft.isEmpty()) {
+    if (avions.isEmpty()) {
       output.println("Aucun avion enregistre.");
       return;
     }
 
-    aircraft.forEach(item -> output.println(item.toDisplayString()));
+    avions.forEach(avion -> output.println(formatAircraft(avion)));
   }
 
   private void addAircraft() {
-    String registration = input.readNonBlank("Immatriculation: ");
-    String model = input.readNonBlank("Modele: ");
-    int capacity = input.readInt("Capacite: ");
-    Aircraft aircraft = aircraftService.addAircraft(registration, model, capacity);
-    output.println("Avion ajoute: " + aircraft.toDisplayString());
+    String immatriculation = input.readNonBlank("Immatriculation: ");
+    String modele = input.readNonBlank("Modele: ");
+    int capacite = input.readInt("Capacite: ");
+
+    Avion avion = new Avion(immatriculation, modele, capacite);
+    avions.add(avion);
+    output.println("Avion ajoute: " + formatAircraft(avion));
   }
 
   private void listCrew() {
-    List<CrewMember> crewMembers = crewService.listCrewMembers();
-    if (crewMembers.isEmpty()) {
+    if (equipages.isEmpty()) {
       output.println("Aucun membre d'equipage enregistre.");
       return;
     }
 
-    crewMembers.forEach(member -> output.println(member.toDisplayString()));
+    equipages.forEach(member -> output.println(formatCrewMember(member)));
   }
 
   private void addCrewMember() {
-    String id = input.readNonBlank("Identifiant: ");
-    String fullName = input.readNonBlank("Nom complet: ");
-    String role = input.readNonBlank("Role: ");
-    CrewMember crewMember = crewService.addCrewMember(id, fullName, role);
-    output.println("Membre ajoute: " + crewMember.toDisplayString());
+    output.println("Type de membre d'equipage: 1. Pilote  2. Personnel cabine");
+    int type = input.readInt("Choix: ");
+
+    int identifiant = input.readInt("Identifiant: ");
+    String nom = input.readNonBlank("Nom: ");
+    String adresse = input.readNonBlank("Adresse: ");
+    String contact = input.readNonBlank("Contact: ");
+    int numeroEmploye = input.readInt("Numero d'employe: ");
+    Date dateEmbauche = readDate("Date d'embauche (yyyy-MM-dd): ");
+
+    Employe employe;
+    if (type == 1) {
+      String licence = input.readNonBlank("Licence: ");
+      String heureDeVol = input.readNonBlank("Heures de vol: ");
+      employe = new Pilote(identifiant, nom, adresse, contact, numeroEmploye, dateEmbauche, licence, heureDeVol);
+    } else if (type == 2) {
+      String qualification = input.readNonBlank("Qualification: ");
+      employe = new PersonnelCabine(identifiant, nom, adresse, contact, numeroEmploye, dateEmbauche, qualification);
+    } else {
+      output.println("Type de membre d'equipage invalide.");
+      return;
+    }
+
+    equipages.add(employe);
+    output.println("Membre ajoute: " + formatCrewMember(employe));
   }
 
-  private LocalDateTime readDateTime(String prompt) {
+  private String readDateTime(String prompt) {
     while (true) {
       String value = input.readNonBlank(prompt);
       try {
-        return LocalDateTime.parse(value, DATE_TIME_FORMATTER);
-      } catch (DateTimeParseException exception) {
+        new SimpleDateFormat(DATE_TIME_PATTERN, Locale.ROOT).parse(value);
+        return value;
+      } catch (ParseException exception) {
         output.println("Format invalide. Attendu: yyyy-MM-dd HH:mm");
       }
     }
   }
 
+  private Date readDate(String prompt) {
+    while (true) {
+      String value = input.readNonBlank(prompt);
+      try {
+        return new SimpleDateFormat(DATE_PATTERN, Locale.ROOT).parse(value);
+      } catch (ParseException exception) {
+        output.println("Format invalide. Attendu: yyyy-MM-dd");
+      }
+    }
+  }
+
+  private int parseIntOrFail(String value, String errorMessage) {
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException exception) {
+      throw new IllegalArgumentException(errorMessage);
+    }
+  }
+
+  private Vol findFlight(int numeroVol) {
+    for (Vol vol : vols) {
+      if (vol.getNumeroVol() == numeroVol) {
+        return vol;
+      }
+    }
+    return null;
+  }
+
+  private Avion findAircraft(String immatriculation) {
+    for (Avion avion : avions) {
+      if (avion.getImmatriculation().equalsIgnoreCase(immatriculation)) {
+        return avion;
+      }
+    }
+    return null;
+  }
+
+  private Pilote findPilot(int numeroEmploye) {
+    for (Employe employe : equipages) {
+      if (employe instanceof Pilote pilote && pilote.getNumeroEmploye() == numeroEmploye) {
+        return pilote;
+      }
+    }
+    return null;
+  }
+
+  private PersonnelCabine findCabinCrew(int numeroEmploye) {
+    for (Employe employe : equipages) {
+      if (employe instanceof PersonnelCabine personnelCabine && personnelCabine.getNumeroEmploye() == numeroEmploye) {
+        return personnelCabine;
+      }
+    }
+    return null;
+  }
+
+  private String formatFlight(Vol vol) {
+    String aircraft = vol.getAvion() != null ? vol.getAvion().getImmatriculation() : "Non affecte";
+    String pilot = vol.getPilote() != null ? vol.getPilote().getNom() : "Non affecte";
+    String cabinCrew = vol.getPersonnelCabine().isEmpty()
+        ? "Aucun"
+        : vol.getPersonnelCabine().stream().map(PersonnelCabine::getNom).collect(Collectors.joining(", "));
+
+    return "Vol n°" + vol.getNumeroVol()
+        + " | " + vol.getOrigine()
+        + " -> " + vol.getDestination()
+        + " | Depart: " + vol.getDateHeureDepart()
+        + " | Arrivee: " + vol.getDateHeureArrive()
+        + " | Etat: " + vol.getEtat()
+        + " | Avion: " + aircraft
+        + " | Pilote: " + pilot
+        + " | Personnel cabine: " + cabinCrew;
+  }
+
+  private String formatAircraft(Avion avion) {
+    return "Avion " + avion.getImmatriculation()
+        + " | Modele: " + avion.getModele()
+        + " | Capacite: " + avion.getCapacite()
+        + " | Etat: " + avion.getEtat()
+        + " | Vols: " + avion.getVols().size();
+  }
+
+  private String formatCrewMember(Employe employe) {
+    String base = "Employe " + employe.getNumeroEmploye()
+        + " | Id: " + employe.getIdentifiant()
+        + " | Nom: " + employe.getNom();
+
+    if (employe instanceof Pilote pilote) {
+      return base + " | Role: Pilote | Licence: " + pilote.getLicence() + " | Heures de vol: " + pilote.getHeureDeVol();
+    }
+
+    if (employe instanceof PersonnelCabine personnelCabine) {
+      return base + " | Role: Personnel cabine | Qualification: " + personnelCabine.getQualification();
+    }
+
+    return base + " | Role: " + employe.obtenirRole();
+  }
+
   private void seedSampleData() {
-    Aircraft aircraft = aircraftService.addAircraft("F-GSKY", "Airbus A320", 180);
-    aircraftService.addAircraft("F-GSUN", "ATR 72", 72);
+    avions.add(new Avion("F-GSKY", "Airbus A320", 180));
+    avions.add(new Avion("F-GSUN", "ATR 72", 72));
 
-    CrewMember captain = crewService.addCrewMember("CRW-001", "Alice Martin", "Captain");
-    CrewMember firstOfficer = crewService.addCrewMember("CRW-002", "Thomas Bernard", "First Officer");
-    crewService.addCrewMember("CRW-003", "Sara Lopez", "Cabin Crew");
+    Pilote captain = new Pilote(1, "Alice Martin", "Paris", "alice@example.com", 1001, new Date(), "ATPL-001", "4200h");
+    Pilote firstOfficer = new Pilote(2, "Thomas Bernard", "Lyon", "thomas@example.com", 1002, new Date(), "CPL-002",
+        "2100h");
+    PersonnelCabine cabin1 = new PersonnelCabine(3, "Sara Lopez", "Marseille", "sara@example.com", 2001, new Date(),
+        "Cabin Crew");
 
-    Flight firstFlight = flightService.createFlight(
-        "SM101",
-        "Paris-CDG",
-        "Lyon",
-        LocalDateTime.of(2026, 4, 20, 8, 0),
-        LocalDateTime.of(2026, 4, 20, 9, 0));
-    Flight secondFlight = flightService.createFlight(
-        "SM102",
-        "Lyon",
-        "Marseille",
-        LocalDateTime.of(2026, 4, 20, 10, 30),
-        LocalDateTime.of(2026, 4, 20, 11, 30));
+    equipages.add(captain);
+    equipages.add(firstOfficer);
+    equipages.add(cabin1);
 
-    flightService.assignAircraft(firstFlight, aircraft);
-    flightService.assignCrewMember(firstFlight, captain);
-    flightService.assignCrewMember(firstFlight, firstOfficer);
-    flightService.assignAircraft(secondFlight, aircraftService.findAircraft("F-GSUN"));
+    Vol firstFlight = new Vol(nextFlightNumber++, "Paris-CDG", "Lyon", "2026-04-20 08:00", "2026-04-20 09:00",
+        "planifie");
+    Vol secondFlight = new Vol(nextFlightNumber++, "Lyon", "Marseille", "2026-04-20 10:30", "2026-04-20 11:30",
+        "planifie");
+
+    firstFlight.setAvion(avions.get(0));
+    firstFlight.setPilote(captain);
+    firstFlight.getPersonnelCabine().add(cabin1);
+    avions.get(0).ajouterVol(firstFlight);
+    avions.get(0).setEtat("affecte");
+
+    secondFlight.setAvion(avions.get(1));
+    avions.get(1).ajouterVol(secondFlight);
+    avions.get(1).setEtat("affecte");
+
+    vols.add(firstFlight);
+    vols.add(secondFlight);
+    aeroports.add(new Aeroport("Paris-CDG", "Paris", "Aeroport de depart principal"));
+    aeroports.add(new Aeroport("Lyon-Saint-Exupery", "Lyon", "Aeroport de correspondance"));
   }
 }

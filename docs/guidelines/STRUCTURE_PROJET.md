@@ -1,89 +1,55 @@
-# Structure de projet recommandée
+# Structure de projet (etat actuel)
 
-Objectif : avoir une base claire, évolutive et facile à maintenir.
+Objectif: decrire l'arborescence actuellement en place dans le projet.
 
-## Arborescence conseillée
+## Arborescence principale
 
 ```text
-mini_projet_G2/
+sky-manager/
   pom.xml
   README.md
-
   docs/
+    architecture.md
     cahier_des_charges.md
     guidelines/
       README.md
-      STRUCTURE_PROJET.md
       CONVENTIONS_CODE.md
       GIT_WORKFLOW.md
+      STRUCTURE_PROJET.md
       CHECKLIST_QUALITE.md
-
   src/
     main/
       java/
         com/sky/manager/
-          app/                     # classes de démarrage, config applicative
-          shared/                  # utilitaires transverses, exceptions, constantes
-          flights/                 # domaine vols
-            domain/
-            application/
-            infrastructure/
-            presentation/
-          aircrafts/               # domaine avions
-            domain/
-            application/
-            infrastructure/
-            presentation/
-          crew/                    # domaine équipage
-            domain/
-            application/
-            infrastructure/
-            presentation/
-          planning/                # domaine planning
-            domain/
-            application/
-            infrastructure/
-            presentation/
-          notifications/           # domaine notifications
-            domain/
-            application/
-            infrastructure/
-            presentation/
-      resources/
-        application.yml
-        db/
-          migration/
+          app/
+            SkyManagerApplication.java
+            console/
+              ConsoleApplication.java
+              ConsoleInput.java
+              ConsoleOutput.java
+            classes/
+              Aeroport.java
+              Avion.java
+              Employe.java
+              Passager.java
+              Personne.java
+              PersonnelCabine.java
+              Pilote.java
+              Reservation.java
+              Vol.java
     test/
       java/
-        com/sky/manager/
-          flights/
-          aircrafts/
-          crew/
-          planning/
-          notifications/
-      resources/
-
-  scripts/                 # scripts d'automatisation (seed, lint, build)
-  data/                    # jeux de données de test, fixtures
-  .github/
-    workflows/             # CI (tests, lint)
-
-  .editorconfig
-  .gitignore
 ```
 
-## Règles d'organisation
+## Regles d'organisation (phase actuelle)
 
-- Un module = un domaine métier.
-- Structure Maven stricte: src/main/java, src/main/resources, src/test/java, src/test/resources.
-- Pas de logique métier dans presentation ou infrastructure.
-- Le package shared ne doit pas dépendre des domaines métier.
-- Les tests suivent la même logique de packages que le code source.
-- Tous les scripts répétitifs vont dans scripts.
+- Le package `app.console` contient uniquement l'interface utilisateur console.
+- Le package `app.classes` contient les modeles metier et leurs comportements de base.
+- L'entree applicative reste minimale dans `SkyManagerApplication`.
+- La persistance n'est pas encore introduite: l'etat est gere en memoire dans la console.
 
-## Anti-patterns à éviter
+## Cible de progression
 
-- Un dossier `utils` géant avec tout mélange.
-- Des fichiers de plus de 300-400 lignes sans justification.
-- Imports circulaires entre modules métier.
-- Mettre les tests dans un dossier tests/ à la racine (non Maven).
+- Introduire progressivement des services applicatifs pour alleger `ConsoleApplication`.
+- Ajouter une couche de persistance une fois le comportement stabilise.
+- Conserver la clarte de l'arborescence pendant la transition.

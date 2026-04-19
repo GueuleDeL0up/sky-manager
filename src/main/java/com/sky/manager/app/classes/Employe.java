@@ -1,6 +1,5 @@
-package com.sky.manager.crew.domain;
+package com.sky.manager.app.classes;
 
-import com.sky.manager.app.Personne;
 import java.util.Date;
 
 public class Employe extends Personne {
@@ -25,7 +24,21 @@ public class Employe extends Personne {
     return dateEmbauche;
   }
 
+  public void setDateEmbauche(Date dateEmbauche) {
+    this.dateEmbauche = dateEmbauche;
+  }
+
+  /**
+   * Retourne le rôle d'un employé par son identifiant
+   */
   public String obtenirRole() {
     return "Employe";
+  }
+
+  @Override
+  public void obtenirInfos() {
+    super.obtenirInfos();
+    System.out.println("Numero d'employé: " + numeroEmploye);
+    System.out.println("Date d'embauche: " + dateEmbauche);
   }
 }

@@ -2,6 +2,13 @@
 
 Objectif : garder un code lisible, cohérent et simple à relire en équipe.
 
+## Portee actuelle
+
+- Le projet expose actuellement une application console simple.
+- Les classes metier sont regroupees sous `com.sky.manager.app.classes`.
+- Les composants d'entree/sortie console sont sous `com.sky.manager.app.console`.
+- La logique est en memoire; aucune persistance n'est imposee dans cette phase.
+
 ## Nommage
 
 ## Maven
@@ -42,10 +49,8 @@ Objectif : garder un code lisible, cohérent et simple à relire en équipe.
 ## Classes
 
 - Classes en `PascalCase`.
-- Services : suffixe `Service`.
-- Repositories : suffixe `Repository`.
-- DTOs / Models : suffixes explicites (`Dto`, `Model`, `Entity`).
-- Interfaces : préfixes ou suffixes explicites (`FlightRepository`, `NotificationPort`).
+- Prefixer/suffixer seulement quand c'est utile (exemple: `ConsoleApplication`, `ConsoleInput`, `ConsoleOutput`).
+- Eviter d'introduire des couches `Service`/`Repository` tant que le projet reste en mode console + memoire.
 
 ## Constantes
 
@@ -55,10 +60,10 @@ Objectif : garder un code lisible, cohérent et simple à relire en équipe.
 
 ## Structure de code
 
-- Séparer : présentation / application / domaine / infrastructure.
-- La logique métier ne dépend pas du framework.
-- Les méthodes doivent être déterministes quand possible.
-- Respecter les packages de la structure définie dans `docs/guidelines/STRUCTURE_PROJET.md`.
+- Garder une separation claire entre interaction console (`app.console`) et modeles metier (`app.classes`).
+- La logique metier ne depend pas d'un framework externe.
+- Les methodes doivent rester simples et deterministes quand possible.
+- Limiter les dependances transverses entre classes pour faciliter la migration vers une architecture modulaire ensuite.
 
 ## Formatage
 

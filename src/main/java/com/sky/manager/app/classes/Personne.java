@@ -1,4 +1,4 @@
-package com.sky.manager.app;
+package com.sky.manager.app.classes;
 
 public abstract class Personne {
   private int identifiant;
@@ -45,8 +45,14 @@ public abstract class Personne {
     this.contact = contact;
   }
 
+  /**
+   * Affiche les informations d'une personne
+   */
   public void obtenirInfos() {
-    System.out
-        .println("Identifiant: " + identifiant + " Nom: " + nom + " Adresse: " + adresse + " Contact: " + contact);
+    System.out.println("=== Informations de la personne ===");
+    System.out.println("Identifiant: " + identifiant);
+    System.out.println("Nom: " + nom);
+    System.out.println("Adresse: " + adresse);
+    System.out.println("Contact: " + contact);
   }
 }

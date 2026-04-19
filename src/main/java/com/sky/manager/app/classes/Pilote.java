@@ -1,4 +1,4 @@
-package com.sky.manager.crew.domain;
+package com.sky.manager.app.classes;
 
 import java.util.Date;
 
@@ -32,5 +32,30 @@ public class Pilote extends Employe {
   @Override
   public String obtenirRole() {
     return "Pilote";
+  }
+
+  @Override
+  public void obtenirInfos() {
+    super.obtenirInfos();
+    System.out.println("Licence: " + licence);
+    System.out.println("Heures de vol: " + heureDeVol);
+  }
+
+  /**
+   * Affecte un pilote à un vol
+   */
+  public void affecterVol(Vol vol) {
+    if (vol == null) {
+      System.out.println("Vol invalide.");
+      return;
+    }
+    System.out.println("Pilote " + getNom() + " affecté au vol n°" + vol.getNumeroVol());
+  }
+
+  /**
+   * Obtient les informations d'un vol
+   */
+  public void obtenirVol(int numeroVol) {
+    System.out.println("Récupération des informations du vol n°" + numeroVol);
   }
 }

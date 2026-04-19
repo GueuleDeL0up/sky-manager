@@ -1,5 +1,17 @@
 # Cahier des charges (MVP)
 
+## Etat actuel (implante)
+
+- Interface utilisateur en console via un menu interactif.
+- Gestion en memoire (pas de base de donnees persistante).
+- Parcours disponibles:
+  - lister les vols;
+  - creer un vol;
+  - affecter un avion a un vol;
+  - affecter un equipage (pilote + personnel cabine) a un vol;
+  - lister/ajouter des avions;
+  - lister/ajouter des membres d'equipage.
+
 ## Contexte
 
 Les opérations de planning aérien sont souvent gérées via des fichiers dispersés,
@@ -14,9 +26,9 @@ Le MVP doit couvrir les besoins essentiels pour une démonstration claire et dé
 
 ## Objectif du MVP
 
-- Centraliser la création, consultation et mise à jour des vols.
-- Permettre l'affectation d'un avion et d'un équipage à chaque vol.
-- Détecter et signaler les conflits de planning simples avant validation.
+- Centraliser en console la creation et la consultation des vols.
+- Permettre l'affectation d'un avion et d'un equipage a chaque vol.
+- Fournir un socle fonctionnel simple, executable localement, pour la demonstration.
 
 ## Utilisateurs cibles
 
@@ -25,9 +37,9 @@ Le MVP doit couvrir les besoins essentiels pour une démonstration claire et dé
 
 ## User stories prioritaires
 
-1. En tant qu'agent d'exploitation, je veux créer et modifier un vol (numéro, aéroport départ/arrivée, horaires), afin de maintenir un planning à jour.
-2. En tant qu'agent d'exploitation, je veux affecter un avion à un vol, afin de garantir qu'un appareil est prévu pour chaque rotation.
-3. En tant que responsable opérations, je veux être alerté en cas de conflit de disponibilité (avion ou équipage déjà affecté au même horaire), afin d'éviter les incohérences de planning.
+1. En tant qu'agent d'exploitation, je veux creer un vol (numero, aeroport depart/arrivee, horaires), afin de maintenir un planning a jour.
+2. En tant qu'agent d'exploitation, je veux affecter un avion a un vol, afin de garantir qu'un appareil est prevu pour chaque rotation.
+3. En tant qu'agent d'exploitation, je veux affecter un equipage (pilote + personnel cabine) a un vol, afin de preparer l'operation du vol.
 
 ## Hors périmètre
 
@@ -35,13 +47,14 @@ Le MVP doit couvrir les besoins essentiels pour une démonstration claire et dé
 - Optimisation avancée du planning (algorithmes de minimisation de coûts/retards).
 - Notifications temps réel (email, SMS, push).
 - Pour le MVP, les notifications sont limitées à une sortie console (trace informative) et ne constituent pas un canal utilisateur complet.
-- Gestion multi-aéroports complexe avec fuseaux horaires avancés.
-- Authentification/rôles avancés (un rôle opérateur simple suffit pour le MVP).
+- Gestion multi-aeroports complexe avec fuseaux horaires avances.
+- Authentification/roles avances (un role operateur simple suffit pour le MVP).
+- Persistance en base de donnees.
+- Detection avancee des conflits de planning sur intervalles horaires.
 
 ## Critères d'acceptation globaux
 
-- Le système doit permettre de créer, lister, modifier et consulter des vols sans perte de données.
-- L'utilisateur doit pouvoir affecter un avion et un équipage à un vol via des règles simples et lisibles.
-- Le système doit bloquer ou signaler explicitement toute double affectation sur un même intervalle horaire.
-- Les erreurs doivent être compréhensibles, contextualisées et exploitables (cause + action attendue).
-- Les parcours critiques (gestion d'un vol, affectation avion/équipage, détection de conflit) doivent être couverts par des tests automatisés.
+- Le systeme doit permettre de creer et lister des vols pendant l'execution de l'application.
+- L'utilisateur doit pouvoir affecter un avion et un equipage a un vol via des regles simples et lisibles.
+- Les erreurs de saisie utilisateur (nombre invalide, format date invalide, identifiant introuvable) doivent etre explicites.
+- Le lancement de l'application doit etre possible depuis la classe principale et le projet doit compiler avec Maven.
