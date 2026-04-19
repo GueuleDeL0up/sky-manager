@@ -23,11 +23,32 @@ public class Passager extends Personne{
   }
 
   public void reserverVol(Reservation reservation) {
+    if (reservation == null) {
+      System.out.println("Réservation invalide.");
+      return;
+    }
+    if (reservations.contains(reservation)) {
+      System.out.println("Cette réservation existe déjà");
+      return;
+    }
     reservations.add(reservation);
+    System.out.println("Réservation ajoutée");
   }
 
-  public void annulerReservation(Reservation reservation) {
-    reservations.remove(reservation);
+  public void annulerReservation(int numeroReservation) {
+    Reservation cible = null;
+    for (Reservation r : reservations) {
+      if (r.getNumeroReservation() == numeroReservation) {
+        cible = r;
+        break;
+      }
+    }
+    if (cible != null) {
+      reservations.remove(cible);
+      System.out.println("Réservation n°" + numeroReservation + " annulée.");
+    } else {
+      System.out.println("Réservation n°" + numeroReservation + " introuvable.");
+    }
   }
 
   public List<Reservation> obtenirReservations() {

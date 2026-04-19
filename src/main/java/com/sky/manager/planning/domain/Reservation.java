@@ -14,4 +14,32 @@ public class Reservation {
     this.dateReservation = dateReservation;
     this.statut = statut;
   }
+
+  public int getNumeroReservation() {
+    return numeroReservation;
+  }
+
+  public void setNumeroReservation(int numeroReservation) {
+    this.numeroReservation = numeroReservation;
+  }
+
+  public String getIdentifiant() {
+    return identifiant;
+  }
+
+  public void setIdentifiant(String identifiant) {
+    this.identifiant = identifiant;
+  }
+
+  public Date getDateReservation() {
+    return dateReservation;
+  }
+
+  public void setDateReservation(Date dateReservation) {
+    this.dateReservation = dateReservation;
+  }
+
+  public String getStatut() {
+    return statut;
+  }
 }
